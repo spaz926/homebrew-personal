@@ -1,8 +1,8 @@
 class Unrar < Formula
   desc "Extract, view, and test RAR archives"
   homepage "https://www.rarlab.com/"
-  url "https://www.rarlab.com/rar/unrarsrc-6.1.3.tar.gz"
-  sha256 "d05022442009202a792e588bec58921c123ff046fc755f7f2272871a5bd79636"
+  url "https://www.rarlab.com/rar/unrarsrc-7.0.9.tar.gz"
+  sha256 "505c13f9e4c54c01546f2e29b2fcc2d7fabc856a060b81e5cdfe6012a9198326"
   license :cannot_represent
 
   livecheck do
@@ -12,8 +12,10 @@ class Unrar < Formula
 
   bottle do
     root_url "https://ghcr.io/v2/carlocab/personal"
-    sha256 cellar: :any,                 big_sur:      "b121f218138895ba6e70fc725ffb72fd21e00e5c021f0b66ca213c2b25e66ea0"
-    sha256 cellar: :any_skip_relocation, x86_64_linux: "c2bc827479e14c5b6b8462631e6fd182c6c5da407f7fdb03e9f7297f64512073"
+    sha256 cellar: :any,                 arm64_sonoma: "8e3b1546f64223163e4857f85adb2a8d7b15712a89d61e8f6279968437694faa"
+    sha256 cellar: :any,                 ventura:      "d9a13d72496f303eb1b6035f53ef761fa83a0b22472ca98db84cad92860837e9"
+    sha256 cellar: :any,                 monterey:     "a7af063c9241e5ff83ca667d9b0ec4d83d58362072dd4530ba64ca1dbfe6e5ba"
+    sha256 cellar: :any_skip_relocation, x86_64_linux: "fd30d7d473b7279be7f6799b81cc200ee1fd4d7faef4e3d1380b1ac0d4f0f852"
   end
 
   def install
@@ -49,10 +51,10 @@ class Unrar < Formula
             "QUMBIApIEAAGRpcmVjdG9yeVxmaWxlLnR4dEhvbWVicmV3CsQ9ewBABwA="
 
     rarpath.write data.unpack1("m")
-    assert_equal contentpath, `#{bin}/unrar lb #{rarpath}`.strip
+    assert_equal contentpath, shell_output("#{bin}/unrar lb #{rarpath}").strip
     assert_equal 0, $CHILD_STATUS.exitstatus
 
     system "#{bin}/unrar", "x", rarpath, testpath
-    assert_equal "Homebrew\n", (testpath/contentpath).read
+    assert_equal "Homebrew", (testpath/contentpath).read.chomp
   end
 end

@@ -1,45 +1,32 @@
 class Libwhich < Formula
   desc "Like `which`, for dynamic libraries"
   homepage "https://github.com/vtjnash/libwhich"
-  url "https://github.com/vtjnash/libwhich/archive/v1.1.0.tar.gz"
-  sha256 "f1c30bf7396859ad437a5db74e9e328fb4b4e1379457121e28a3524b1e3a0b3f"
+  url "https://github.com/vtjnash/libwhich/archive/refs/tags/v1.2.0.tar.gz"
+  sha256 "aa13017310f3f9b008267283c155992bb7e0f6002dafaf82e6f0dbd270c18b0a"
   license "MIT"
   head "https://github.com/vtjnash/libwhich.git"
 
   bottle do
     root_url "https://ghcr.io/v2/carlocab/personal"
-    sha256 cellar: :any_skip_relocation, big_sur:      "a43faeef4fe0d6884d7f6b83f78f1dd5c724cbac574361c689086334b0722f64"
-    sha256 cellar: :any_skip_relocation, catalina:     "279c630cfddf07d58d9c98e0208c6f02f452176585f8d30e3009b8886e32ff02"
-    sha256 cellar: :any_skip_relocation, x86_64_linux: "6633347026a69c78afc5eb57d2fb22c4f2cd01fed72b412d9b02030e1728e22c"
+    rebuild 2
+    sha256 cellar: :any_skip_relocation, arm64_sequoia: "1b49fd5b5df4d0526193b8e37d103464940430009c9af170876d945be8ea5a9c"
+    sha256 cellar: :any_skip_relocation, arm64_sonoma:  "e4d13ccdacedc55416224231f83a08977a1c85d35456dcb713683d45a90750e2"
+    sha256 cellar: :any_skip_relocation, ventura:       "5548500b01ed6afa0b6171e714fda2c09605fe33287afc96a7b0cb3629251359"
+    sha256 cellar: :any_skip_relocation, monterey:      "ca4d5466bf11bfe87654ce6242040680dfb799cdda623c416ceb7827fd3e2cdb"
+    sha256 cellar: :any_skip_relocation, x86_64_linux:  "c3926f38987795b2359f31afbe1ba9d2955d4174f2b7aaf927e34f5fdecb39b0"
   end
 
-  on_linux do
-    depends_on "gnu-sed" => :test
-  end
-
-  # Fix `test-libwhich.sh` on Linux
-  # https://github.com/vtjnash/libwhich/pull/15
-  patch do
-    url "https://github.com/vtjnash/libwhich/commit/87cffe10080c98e7b5786c5166e420bf1ada1d41.patch?full_index=1"
-    sha256 "3fde7731301750c6d1756e5b64d232ff6eebec8ed35ece3fde55f2a8fb3ca3cb"
-  end
+  depends_on "gnu-sed" => :test
 
   def install
-    system "make"
-    bin.install "libwhich"
+    ENV.append "LDFLAGS", "-Wl,-rpath,#{rpath(target: HOMEBREW_PREFIX/"lib")}"
+    system "make", "prefix=#{prefix}", "install"
     inreplace "test-libwhich.sh", "./libwhich", "#{bin}/libwhich"
     libexec.install "test-libwhich.sh"
   end
 
   test do
-    on_macos do
-      assert_equal "/usr/lib/libSystem.B.dylib", shell_output("#{bin}/libwhich -p libSystem.B.dylib")
-    end
-
-    on_linux do
-      ENV.prepend_path "PATH", Formula["gnu-sed"].opt_libexec/"gnubin"
-      system ENV.cc, "-o", shared_library("libz"), "-shared", "-x", "c", "/dev/null"
-      system libexec/"test-libwhich.sh"
-    end
+    ENV.prepend_path "PATH", Formula["gnu-sed"].opt_libexec/"gnubin"
+    system libexec/"test-libwhich.sh"
   end
 end
